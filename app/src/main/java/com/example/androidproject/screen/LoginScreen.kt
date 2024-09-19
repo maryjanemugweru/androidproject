@@ -96,7 +96,7 @@ fun LoginScreen(navController: NavController) {
                 TextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password") },
+                    label = { Text("Passwo100rd") },
                     visualTransformation = visualTransformation,
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
@@ -133,7 +133,7 @@ fun LoginScreen(navController: NavController) {
                         if (email.isNotEmpty() && password.isNotEmpty()) {
                             signIn(email, password, auth, navController,
                                 { user ->
-                                    navController.navigate(Screens.LoginScreen.route) // Navigate to Dashboard on success
+                                    navController.navigate(Screens.DashboardScreen.route) // Navigate to Dashboard on success
                                 },
                                 { error ->
                                 })

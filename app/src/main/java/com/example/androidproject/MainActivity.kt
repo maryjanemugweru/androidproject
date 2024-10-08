@@ -20,10 +20,17 @@ import androidx.navigation.compose.rememberNavController
 import com.example.androidproject.nav.NavGraph
 import com.example.androidproject.ui.theme.AndroidprojectTheme
 import com.example.androidproject.utils.DashboardViewModel
+import com.example.androidproject.utils.JobViewModel
+
+
+
+
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
     private val dashboardViewModel: DashboardViewModel by viewModels()
+    private val jobViewModel: JobViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -37,7 +44,8 @@ class MainActivity : ComponentActivity() {
 
                     NavGraph(
                         navController = navController,
-                        dashboardViewModel = dashboardViewModel
+                        dashboardViewModel = dashboardViewModel,
+                        jobViewModel = jobViewModel
                     )
                 }
             }

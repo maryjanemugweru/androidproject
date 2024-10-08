@@ -281,7 +281,7 @@ fun IstBottomBar(dashboardViewModel: DashboardViewModel, navController: NavContr
                     label = "Jobs",
                     onClick = {
                         dashboardViewModel.updateScreen("jobs")
-                        navController.navigate(Screens.DashboardScreen.route)
+                        navController.navigate(Screens.JobScreen.route)
                     }
                 )
 

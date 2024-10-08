@@ -6,14 +6,17 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.androidproject.screen.DashboardScreen
+import com.example.androidproject.screen.JobScreen
 import com.example.androidproject.screen.RegisterScreen
 import com.example.androidproject.screen.LoginScreen
 import com.example.androidproject.utils.DashboardViewModel
+import com.example.androidproject.utils.JobViewModel
 
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    dashboardViewModel: DashboardViewModel
+    dashboardViewModel: DashboardViewModel,
+    jobViewModel: JobViewModel
 )
 
 {
@@ -40,6 +43,12 @@ fun NavGraph(
             route = Screens.DashboardScreen.route
         ){
             DashboardScreen(navController = navController, dashboardViewModel = dashboardViewModel)
+        }
+
+        composable(
+            route = Screens.JobScreen.route
+        ){
+            JobScreen(navController = navController, jobViewModel = jobViewModel)
         }
     }
 }

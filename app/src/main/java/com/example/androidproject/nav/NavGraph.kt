@@ -6,6 +6,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.androidproject.screen.DashboardScreen
+import com.example.androidproject.screen.JobDetailsScreen
+import com.example.androidproject.screen.JobPostScreen
 import com.example.androidproject.screen.JobScreen
 import com.example.androidproject.screen.RegisterScreen
 import com.example.androidproject.screen.LoginScreen
@@ -50,5 +52,19 @@ fun NavGraph(
         ){
             JobScreen(navController = navController, jobViewModel = jobViewModel)
         }
+        
+        composable(
+            route =Screens.JobPostScreen.route
+        ){
+            JobPostScreen(navController = navController, jobViewModel = jobViewModel)
+        }
+        composable(
+            route =  Screens.JobDetailsScreen.route
+        ){backStackEntry ->
+            val jobID =backStackEntry.arguments?.getString("jobID") ?: return@composable
+
+            JobDetailsScreen(navController = navController, jobId =jobID)
+        }
     }
+
 }

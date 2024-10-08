@@ -2,6 +2,7 @@ package com.example.androidproject.screen
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.BasicTextField
@@ -22,11 +23,11 @@ import androidx.navigation.NavController
 import com.example.androidproject.utils.JobData
 import com.example.androidproject.utils.JobViewModel
 
+// JobScreen.kt
 @Composable
 fun JobScreen(navController: NavController, jobViewModel: JobViewModel) {
-    // Job list state
     var jobs by remember { mutableStateOf<List<JobData>>(emptyList()) }
-    var context = LocalContext.current
+    val context = LocalContext.current
 
     // Fetch jobs from Firebase
     LaunchedEffect(Unit) {
@@ -35,9 +36,7 @@ fun JobScreen(navController: NavController, jobViewModel: JobViewModel) {
         }, context = context)
     }
 
-    // Column for search bar and list of jobs
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        // Search bar
         var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
         BasicTextField(
             value = searchQuery,
@@ -61,10 +60,11 @@ fun JobScreen(navController: NavController, jobViewModel: JobViewModel) {
             }
         )
 
-        // LazyColumn for job listings
         LazyColumn {
             items(jobs.size) { index ->
-                JobItem(job = jobs[index])
+                JobItem(job = jobs[index], onClick = {
+                    navController.navigate("jobDetails/${jobs[index].jobID}") // Assuming JobData has an 'id' property
+                })
                 Divider(color = Color.LightGray, thickness = 1.dp)
             }
         }
@@ -72,11 +72,12 @@ fun JobScreen(navController: NavController, jobViewModel: JobViewModel) {
 }
 
 @Composable
-fun JobItem(job: JobData) {
+fun JobItem(job: JobData, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
+            .clickable(onClick = onClick) // Make job clickable
     ) {
         Text(text = job.title, fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Text(text = job.company, color = Color.Gray, fontSize = 14.sp)

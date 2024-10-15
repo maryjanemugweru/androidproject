@@ -60,21 +60,18 @@ fun NavGraph(
             JobPostScreen(navController = navController, jobViewModel = jobViewModel)
         }
         composable(
-            route =  Screens.JobDetailsScreen.route
-        ){backStackEntry ->
-            val jobID =backStackEntry.arguments?.getString("jobID") ?: return@composable
-
-            JobDetailsScreen(navController = navController, jobId =jobID)
-        }
-
-        composable(
             route = Screens.JobDetailsScreen.route
         ) { backStackEntry ->
             val jobID = backStackEntry.arguments?.getString("jobID") ?: return@composable
-            JobDetailsScreen(navController = navController, jobId = jobID, onEditClicked = {
-                navController.navigate(Screens.EditJobScreen.route + "/$jobID")
-            })
+
+            JobDetailsScreen(
+                navController = navController,
+                jobID = jobID,
+                jobViewModel = jobViewModel
+            )
         }
+
+
 
 // New composable for Edit Job Screen
         composable(

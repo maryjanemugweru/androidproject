@@ -21,9 +21,9 @@ fun EditJobScreen(navController: NavController, jobViewModel: JobViewModel, jobI
     var jobDescription by remember { mutableStateOf("") }
 
     // Fetch job details
-    LaunchedEffect(jobId) {
-        jobViewModel.getJobDetails(jobId) // Fetch job details using the ViewModel
-    }
+//    LaunchedEffect(jobId) {
+//        jobViewModel.getJobDetails(jobId) // Fetch job details using the ViewModel
+//    }
 
     // Observe job details
     val jobDetails by jobViewModel.jobDetails.collectAsState()

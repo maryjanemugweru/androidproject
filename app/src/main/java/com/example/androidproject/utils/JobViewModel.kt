@@ -4,14 +4,19 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
+import androidx.navigation.NavController
+import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class JobViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
@@ -38,19 +43,28 @@ class JobViewModel : ViewModel() {
     }
 
     // Function to delete a job
-    fun deleteJob(jobId: String, context: Context) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val documentRef = firestore.collection("jobs").document(jobId)
-            try {
-                documentRef.delete()
-                    .addOnSuccessListener {
-                        Toast.makeText(context, "Job deleted successfully", Toast.LENGTH_SHORT).show()
+    fun deleteJob(
+        jobID: String,
+        navController: NavController,
+        context: Context
+    ) = CoroutineScope(Dispatchers.IO).launch {
+        val fireStoreRef = Firebase.firestore
+            .collection("jobs")
+            .document(jobID)
+
+        try {
+            fireStoreRef.delete()
+                .addOnSuccessListener {
+                    // Show a success message on the UI thread
+                    CoroutineScope(Dispatchers.Main).launch {
+                        Toast.makeText(context, "Successfully deleted job", Toast.LENGTH_SHORT).show()
+                        navController.popBackStack() // Navigate back to the previous screen
                     }
-                    .addOnFailureListener { e ->
-                        Toast.makeText(context, "Error deleting job: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-            } catch (e: Exception) {
-                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        } catch (e: Exception) {
+            // Show error message on the UI thread
+            CoroutineScope(Dispatchers.Main).launch {
+                Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -73,28 +87,33 @@ class JobViewModel : ViewModel() {
     }
 
     // Updated getJobDetails to use StateFlow
-    fun getJobDetails(jobId: String) {
-        val documentRef = firestore.collection("jobs").document(jobId)
-
+    fun getJobById(
+        jobID: String,
+        onResult: (JobData?) -> Unit,
+        context: Context
+    ) {
+        // Launch the coroutine in the IO dispatcher
         CoroutineScope(Dispatchers.IO).launch {
+            val fireStoreRef = FirebaseFirestore.getInstance()
+            val documentRef = fireStoreRef.collection("jobs").document(jobID)
+
             try {
-                documentRef.get().addOnSuccessListener { document ->
-                    if (document != null) {
-                        val jobData = document.toObject(JobData::class.java)
-                        _jobDetails.value = jobData
-                        Log.d("JobViewModel", "Job data fetched: ${jobData?.title}")
-                    } else {
-                        Log.d("JobViewModel", "No such document with jobId: $jobId")
-                        _jobDetails.value = null
-                    }
-                }.addOnFailureListener { exception ->
-                    Log.d("JobViewModel", "Error fetching job with jobId: $jobId", exception)
-                    _jobDetails.value = null
+                // Get the document snapshot
+                val documentSnapshot = documentRef.get().await() // Ensure you have the necessary dependencies for await()
+                val jobData = documentSnapshot.toObject<JobData>()
+
+                // Post the result back to the main thread
+                withContext(Dispatchers.Main) {
+                    onResult(jobData)
                 }
             } catch (e: Exception) {
-                Log.d("JobViewModel", "Error fetching job: ${e.message}")
-                _jobDetails.value = null
+                // Show toast on the main thread
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, e.message ?: "Error fetching job", Toast.LENGTH_SHORT).show()
+                    onResult(null)
+                }
             }
         }
     }
+
 }

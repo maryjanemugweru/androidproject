@@ -1,95 +1,153 @@
 package com.example.androidproject.screen
 
+import androidx.compose.foundation.Image
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.androidproject.utils.JobData
 import com.example.androidproject.utils.JobViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun JobDetailsScreen(
     navController: NavController,
-    jobId: String,
-    onEditClicked: () -> Unit
+    jobID: String,
+    jobViewModel: JobViewModel = viewModel(),
+    db: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    currentUser: FirebaseAuth? = FirebaseAuth.getInstance()
 ) {
-    val jobViewModel: JobViewModel = viewModel()
     val context = LocalContext.current
+    val jobData = remember { mutableStateOf<JobData?>(null) }
+    val isLoading = remember { mutableStateOf(true) }
+    val userRole = remember { mutableStateOf<String?>(null) }
+    val isLoadingRole = remember { mutableStateOf(true) }
 
-    // Fetch job details
-    LaunchedEffect(jobId) {
-        jobViewModel.getJobDetails(jobId) // Fetch job details using the ViewModel
+    // Fetch the job details
+    LaunchedEffect(jobID) {
+        jobViewModel.getJobById(jobID, { data ->
+            if (data != null) {
+                jobData.value = data
+                isLoading.value = false
+            } else {
+                // Log an error if data is null
+                Log.e("JobDetailsScreen", "Job data is null for jobID: $jobID")
+            }
+        }, context)
     }
 
-    // Observe job details
-    val jobDetails by jobViewModel.jobDetails.collectAsState()
-
-    // Check if job details are null
-    if (jobDetails == null) {
-        // Show a loading indicator or a placeholder
-        Text(
-            text = "Loading job details...",
-            modifier = Modifier.fillMaxSize(),
-            fontSize = 16.sp
-        )
-        return
-    }
-
-    // Display job details once they are fetched
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.Start
-    ) {
-        // Display Job Data
-        Text(
-            text = "Job Title: ${jobDetails.title}",
-            fontWeight = FontWeight.Bold,
-            fontSize = 24.sp
-        )
-        Text(text = "Company: ${jobDetails.company}", fontSize = 18.sp)
-        Text(text = "Location: ${jobDetails.location}", fontSize = 18.sp)
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Description: ${jobDetails.description}", fontSize = 16.sp)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Edit button
-        Button(onClick = onEditClicked) {
-            Text("Edit Job")
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Delete button
-        Button(onClick = {
-            jobViewModel.deleteJob(jobId, context)
-            navController.popBackStack() // Navigate back after deletion
-        }) {
-            Text("Delete Job")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Apply Button
-        Button(onClick = { handleApply(context, jobDetails) }) {
-            Text("Apply")
+    // Fetch the user role
+    LaunchedEffect(currentUser?.uid) {
+        currentUser?.uid?.let { uid ->
+            db.collection("users").document(uid).get()
+                .addOnSuccessListener { document ->
+                    userRole.value = document.getString("role")
+                    isLoadingRole.value = false
+                }
+                .addOnFailureListener {
+                    userRole.value = null
+                    isLoadingRole.value = false
+                }
         }
     }
-}
 
-// Function to handle job application logic
-private fun handleApply(context: android.content.Context, job: JobData) {
-    Toast.makeText(context, "Applied for ${job.title}", Toast.LENGTH_SHORT).show()
+    Scaffold(
+        topBar = {
+
+        }
+    ) { paddingValues ->
+        if (isLoading.value || isLoadingRole.value) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            jobData.value?.let { job ->
+                // Display job details
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Text(text = job.title, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(bottom = 8.dp))
+                    Text(text = job.company, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 4.dp))
+                    Text(text = job.location, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = 16.dp))
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                    Text(text = "Description", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 8.dp))
+                    Text(text = job.description, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = 16.dp))
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Apply button logic
+                    Button(
+                        onClick = {
+                            navController.navigate("jobApplication/$jobID")
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text("Apply", color = MaterialTheme.colorScheme.onPrimary)
+                    }
+
+                    // Display Edit and Delete buttons if the user is an admin
+                    if (userRole.value == "admin") {
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Button(
+                                onClick = {
+                                    // Navigate to the EditJobScreen
+                                    navController.navigate("editJobs_screen/$jobID")
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                            ) {
+                                Text("Edit", color = MaterialTheme.colorScheme.onSecondary)
+                            }
+
+                            Spacer(modifier = Modifier.width(16.dp))
+
+                            Button(
+                                onClick = {
+                                    jobViewModel.deleteJob(jobID, navController, context)
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                            ) {
+                                Text("Delete", color = MaterialTheme.colorScheme.onError)
+                            }
+                        }
+                    }
+                }
+            } ?: run {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Job not found")
+                }
+            }
+        }
+    }
 }

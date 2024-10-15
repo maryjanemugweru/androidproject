@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.androidproject.screen.DashboardScreen
+import com.example.androidproject.screen.EditJobScreen
 import com.example.androidproject.screen.JobDetailsScreen
 import com.example.androidproject.screen.JobPostScreen
 import com.example.androidproject.screen.JobScreen
@@ -24,7 +25,7 @@ fun NavGraph(
 {
     NavHost(
         navController = navController ,
-        startDestination = Screens.DashboardScreen.route
+        startDestination = Screens.JobDetailsScreen.route
     ){
         // register screen
         composable(
@@ -65,6 +66,23 @@ fun NavGraph(
 
             JobDetailsScreen(navController = navController, jobId =jobID)
         }
-    }
 
+        composable(
+            route = Screens.JobDetailsScreen.route
+        ) { backStackEntry ->
+            val jobID = backStackEntry.arguments?.getString("jobID") ?: return@composable
+            JobDetailsScreen(navController = navController, jobId = jobID, onEditClicked = {
+                navController.navigate(Screens.EditJobScreen.route + "/$jobID")
+            })
+        }
+
+// New composable for Edit Job Screen
+        composable(
+            route = Screens.EditJobScreen.route + "/{jobId}"
+        ) { backStackEntry ->
+            val jobID = backStackEntry.arguments?.getString("jobId") ?: return@composable
+            EditJobScreen(navController = navController, jobViewModel = jobViewModel, jobId = jobID)
+        }
+
+    }
 }

@@ -20,26 +20,42 @@ class JobViewModel : ViewModel() {
     private val _jobDetails = MutableStateFlow<JobData?>(null)
     val jobDetails: StateFlow<JobData?> get() = _jobDetails
 
-    fun saveJob(
-        jobData: JobData,
-        context: Context
-    ) = CoroutineScope(Dispatchers.IO).launch {
+    // Function to save or update job data
+    fun saveJob(jobData: JobData, context: Context) = CoroutineScope(Dispatchers.IO).launch {
         val fireStoreRef = firestore.collection("jobs").document(jobData.jobID)
 
         try {
             fireStoreRef.set(jobData)
                 .addOnSuccessListener {
-                    Toast.makeText(context, "Successfully posted data", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Successfully updated job data", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener { exception ->
+                    Toast.makeText(context, exception.message ?: "Failed to update job data", Toast.LENGTH_SHORT).show()
                 }
         } catch (e: Exception) {
             Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
         }
     }
 
-    fun getAllJobs(
-        onResult: (List<JobData>) -> Unit,
-        context: Context
-    ) = CoroutineScope(Dispatchers.IO).launch {
+    // Function to delete a job
+    fun deleteJob(jobId: String, context: Context) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val documentRef = firestore.collection("jobs").document(jobId)
+            try {
+                documentRef.delete()
+                    .addOnSuccessListener {
+                        Toast.makeText(context, "Job deleted successfully", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(context, "Error deleting job: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun getAllJobs(onResult: (List<JobData>) -> Unit, context: Context) = CoroutineScope(Dispatchers.IO).launch {
         val fireStoreRef = firestore.collection("jobs")
 
         try {
@@ -64,14 +80,15 @@ class JobViewModel : ViewModel() {
             try {
                 documentRef.get().addOnSuccessListener { document ->
                     if (document != null) {
-                        val jobData = document.toObject<JobData>()
-                        _jobDetails.value = jobData // Update the StateFlow with the fetched data
+                        val jobData = document.toObject(JobData::class.java)
+                        _jobDetails.value = jobData
+                        Log.d("JobViewModel", "Job data fetched: ${jobData?.title}")
                     } else {
-                        Log.d("JobViewModel", "No such document")
+                        Log.d("JobViewModel", "No such document with jobId: $jobId")
                         _jobDetails.value = null
                     }
                 }.addOnFailureListener { exception ->
-                    Log.d("JobViewModel", "get failed with ", exception)
+                    Log.d("JobViewModel", "Error fetching job with jobId: $jobId", exception)
                     _jobDetails.value = null
                 }
             } catch (e: Exception) {

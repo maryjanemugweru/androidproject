@@ -96,7 +96,7 @@ fun LoginScreen(navController: NavController) {
                 TextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Passwo100rd") },
+                    label = { Text("Password") },
                     visualTransformation = visualTransformation,
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true

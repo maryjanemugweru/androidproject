@@ -5,15 +5,19 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.androidproject.screen.AdminApplicationListScreen
 import com.example.androidproject.screen.DashboardScreen
 import com.example.androidproject.screen.EditJobScreen
+import com.example.androidproject.screen.JobApplicationScreen
 import com.example.androidproject.screen.JobDetailsScreen
 import com.example.androidproject.screen.JobPostScreen
 import com.example.androidproject.screen.JobScreen
 import com.example.androidproject.screen.RegisterScreen
 import com.example.androidproject.screen.LoginScreen
+import com.example.androidproject.screen.UserApplicationsScreen
 import com.example.androidproject.utils.DashboardViewModel
 import com.example.androidproject.utils.JobViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun NavGraph(
@@ -25,7 +29,7 @@ fun NavGraph(
 {
     NavHost(
         navController = navController ,
-        startDestination = Screens.JobDetailsScreen.route
+        startDestination = Screens.LoginScreen.route
     ){
         // register screen
         composable(
@@ -62,23 +66,56 @@ fun NavGraph(
         composable(
             route = Screens.JobDetailsScreen.route
         ) { backStackEntry ->
-            val jobID = backStackEntry.arguments?.getString("jobID") ?: return@composable
+            val jobId = backStackEntry.arguments?.getString("jobId") ?: return@composable
 
             JobDetailsScreen(
                 navController = navController,
-                jobID = jobID,
+                jobID = jobId,
                 jobViewModel = jobViewModel
+            )
+
+        }
+
+        composable(
+            route = Screens.EditJobScreen.route
+        ) { backStackEntry ->
+            val jobId = backStackEntry.arguments?.getString("jobId") ?: return@composable
+
+            EditJobScreen(
+                navController = navController,
+                jobID = jobId,
+                jobViewModel = jobViewModel
+            )
+
+        }
+
+        composable(
+            route = Screens.JobApplicationScreen.route
+        ) { backStackEntry ->
+            val jobId = backStackEntry.arguments?.getString("jobId") ?: return@composable
+
+            // Get the currently authenticated user's ID
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            val userID = currentUser?.uid ?: return@composable
+
+            JobApplicationScreen(
+                navController = navController,
+                jobID = jobId,
+                jobViewModel = jobViewModel,
+                userId = userID
             )
         }
 
-
-
-// New composable for Edit Job Screen
         composable(
-            route = Screens.EditJobScreen.route + "/{jobId}"
-        ) { backStackEntry ->
-            val jobID = backStackEntry.arguments?.getString("jobId") ?: return@composable
-            EditJobScreen(navController = navController, jobViewModel = jobViewModel, jobId = jobID)
+            route = Screens.UserApplicationsScreen.route
+        ){
+            UserApplicationsScreen(navController = navController)
+        }
+
+        composable(
+            route = Screens.AdminApplicationListScreen.route
+        ){
+            AdminApplicationListScreen(navController = navController)
         }
 
     }

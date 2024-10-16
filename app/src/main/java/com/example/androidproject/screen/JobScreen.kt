@@ -1,21 +1,14 @@
 package com.example.androidproject.screen
 
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.Alignment
@@ -26,7 +19,7 @@ import androidx.navigation.NavController
 import com.example.androidproject.utils.JobData
 import com.example.androidproject.utils.JobViewModel
 
-// JobScreen.kt
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JobScreen(navController: NavController, jobViewModel: JobViewModel) {
     var jobs by remember { mutableStateOf<List<JobData>>(emptyList()) }
@@ -39,36 +32,30 @@ fun JobScreen(navController: NavController, jobViewModel: JobViewModel) {
         }, context = context)
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
-        BasicTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Available Jobs") },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        }
+    ) { paddingValues ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            decorationBox = { innerTextField ->
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .background(Color.LightGray, MaterialTheme.shapes.small)
-                        .padding(10.dp)
-                ) {
-                    if (searchQuery.text.isEmpty()) {
-                        Text("Search Jobs", color = Color.Gray)
-                    }
-                    innerTextField()
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
+            LazyColumn {
+                items(jobs.size) { index ->
+                    JobItem(job = jobs[index], onClick = {
+                        navController.navigate("jobDetails/${jobs[index].jobID}")
+                    })
+                    Divider(color = Color.LightGray, thickness = 1.dp)
                 }
-            }
-        )
-
-        LazyColumn {
-            items(jobs.size) { index ->
-                JobItem(job = jobs[index], onClick = {
-                    navController.navigate("jobDetails/${jobs[index].jobID}") // Assuming JobData has an 'id' property
-                })
-                Divider(color = Color.LightGray, thickness = 1.dp)
             }
         }
     }
@@ -80,7 +67,7 @@ fun JobItem(job: JobData, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .clickable(onClick = onClick) // Make job clickable
+            .clickable(onClick = onClick)
     ) {
         Text(text = job.title, fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Text(text = job.company, color = Color.Gray, fontSize = 14.sp)
@@ -88,15 +75,13 @@ fun JobItem(job: JobData, onClick: () -> Unit) {
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = job.description, fontSize = 14.sp)
     }
-
 }
+
 @Composable
 fun JobListScreen(navController: NavController, jobs: List<JobData>) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        // Display a list of jobs
         jobs.forEach { job ->
             JobCard(job = job, onClick = {
-                // Navigate to JobDetailsScreen with the job ID when the card is clicked
                 navController.navigate("jobDetails/${job.jobID}")
             })
         }
@@ -111,7 +96,7 @@ fun JobCard(job: JobData, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .clickable { onClick() } // Make the card clickable
+            .clickable { onClick() }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = job.title, fontSize = 20.sp)

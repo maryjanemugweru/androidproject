@@ -1,7 +1,6 @@
 package com.example.androidproject.screen
 
 import androidx.compose.foundation.Image
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -36,13 +35,8 @@ fun JobDetailsScreen(
     // Fetch the job details
     LaunchedEffect(jobID) {
         jobViewModel.getJobById(jobID, { data ->
-            if (data != null) {
-                jobData.value = data
-                isLoading.value = false
-            } else {
-                // Log an error if data is null
-                Log.e("JobDetailsScreen", "Job data is null for jobID: $jobID")
-            }
+            jobData.value = data
+            isLoading.value = false
         }, context)
     }
 
@@ -98,7 +92,7 @@ fun JobDetailsScreen(
                     // Apply button logic
                     Button(
                         onClick = {
-                            navController.navigate("jobApplication/$jobID")
+                            navController.navigate("jobApplication/{${job.jobID}")
                         },
                         modifier = Modifier
                             .fillMaxWidth()

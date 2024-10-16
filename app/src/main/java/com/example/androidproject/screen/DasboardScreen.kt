@@ -78,25 +78,80 @@ fun AdminDashboard(navController: NavController, dashboardViewModel: DashboardVi
 
 @Composable
 fun AdminDisplay(navController: NavController, paddingValues: PaddingValues) {
-    Column(
+    Box(
         modifier = Modifier
+            .fillMaxSize()
             .padding(paddingValues)
             .padding(16.dp)
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        Button(onClick = {
-            navController.navigate("jobPosting_screen")
-        }) {
-            Text("Post New Job")
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .shadow(4.dp, shape = RoundedCornerShape(16.dp)),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Title
+                Text(
+                    text = "Admin Dashboard",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier
+                        .padding(bottom = 16.dp)
+                        .fillMaxWidth()
+                )
+
+                // Post New Job Button
+                Button(
+                    onClick = { navController.navigate("jobPosting_screen") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text(
+                        text = "Post New Job",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+
+                // View Alumni Applications Button
+                Button(
+                    onClick = { navController.navigate("adminApplication_screen") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text(
+                        text = "View Alumni Applications",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+
+                // Logout Button (spaced similarly as in the Alumni display)
+                Spacer(modifier = Modifier.height(32.dp))
+                LogoutButton(navController)
+            }
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { /* Navigate to another Admin-specific screen */ }) {
-            Text("Review Alumni Applications")
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        LogoutButton(navController)
     }
 }
 
@@ -113,68 +168,71 @@ fun AlumniDisplay(navController: NavController, paddingValues: PaddingValues) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .shadow(4.dp, shape = RoundedCornerShape(12.dp)),
-            shape = RoundedCornerShape(12.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                .shadow(4.dp, shape = RoundedCornerShape(16.dp)),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(
                 modifier = Modifier
                     .padding(24.dp)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(20.dp),  // Creates consistent space between items
+                verticalArrangement = Arrangement.spacedBy(24.dp),  // Increased spacing for better readability
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Title
                 Text(
                     text = "Alumni Dashboard",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
-                        .padding(bottom = 12.dp)
+                        .padding(bottom = 16.dp)
                         .fillMaxWidth()
                 )
 
-                // Buttons
+                // View Job Postings Button
                 Button(
-                    onClick = { /* Navigate to Job Postings screen */ },
+                    onClick = { navController.navigate("job_screen") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(10.dp),
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text(
                         text = "View Job Postings",
-                        color = Color.White,
-                        fontWeight = FontWeight.Medium
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
 
+                // Review Applications Button
                 Button(
-                    onClick = { /* Navigate to Review Applications screen */ },
+                    onClick = { navController.navigate("userApplications_screen") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(10.dp),
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text(
                         text = "Review Applications",
-                        color = Color.White,
-                        fontWeight = FontWeight.Medium
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
 
-                // Logout Button
+                // Logout Button (Separated by more space to distinguish it as a different section)
+                Spacer(modifier = Modifier.height(32.dp))
                 LogoutButton(navController)
             }
         }
     }
 }
-
 
 @Composable
 fun AlumniDashboard(navController: NavController, dashboardViewModel: DashboardViewModel, userID: String) {
@@ -209,26 +267,10 @@ fun IstTopBar(navController: NavController, userID: String) {
             )
         },
         navigationIcon = {
-            IconButton(onClick = { /* Handle navigation */ }) {
-                Icon(
-                    imageVector = Icons.Filled.Menu,
-                    contentDescription = "Menu"
-                )
-            }
+
         },
         actions = {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(Color.Blue)
-                    .clickable {
-                        navController.navigate("viewProfile_screen/$userID")
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                // Optionally, add something inside the circle, e.g., initials or an icon
-            }
+
         },
         scrollBehavior = scrollBehavior,
     )
@@ -255,23 +297,13 @@ fun IstBottomBar(dashboardViewModel: DashboardViewModel, navController: NavContr
                     }
                 )
 
-                // Network
+                // Application
                 BottomBarIcon(
                     imageVector = Icons.Filled.Person,
-                    label = "Network",
+                    label = "Applications",
                     onClick = {
-                        dashboardViewModel.updateScreen("network")
-                        navController.navigate(Screens.DashboardScreen.route)
-                    }
-                )
-
-                // Add
-                BottomBarIcon(
-                    imageVector = Icons.Filled.Add,
-                    label = "Add",
-                    onClick = {
-                        dashboardViewModel.updateScreen("add")
-                        navController.navigate(Screens.DashboardScreen.route)
+                        dashboardViewModel.updateScreen("applications")
+                        navController.navigate(Screens.UserApplicationsScreen.route)
                     }
                 )
 
@@ -282,16 +314,6 @@ fun IstBottomBar(dashboardViewModel: DashboardViewModel, navController: NavContr
                     onClick = {
                         dashboardViewModel.updateScreen("jobs")
                         navController.navigate(Screens.JobScreen.route)
-                    }
-                )
-
-                // Inbox
-                BottomBarIcon(
-                    imageVector = Icons.Filled.Notifications,
-                    label = "Inbox",
-                    onClick = {
-                        dashboardViewModel.updateScreen("inbox")
-                        navController.navigate(Screens.DashboardScreen.route)
                     }
                 )
             }
@@ -322,7 +344,7 @@ fun LogoutButton(navController: NavController) {
     Button(
         onClick = {
             FirebaseAuth.getInstance().signOut()
-            navController.navigate(Screens.RegisterScreen.route) {
+            navController.navigate(Screens.LoginScreen.route) {
                 popUpTo(Screens.DashboardScreen.route) {
                     inclusive = true
                 }

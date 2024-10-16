@@ -116,4 +116,71 @@ class JobViewModel : ViewModel() {
         }
     }
 
+    fun submitApplication(applicationData: ApplicationData, context: Context, onComplete: () -> Unit) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val applicationRef = firestore.collection("applications").document(applicationData.applicationId)
+
+            try {
+                applicationRef.set(applicationData)
+                    .addOnSuccessListener {
+                        Toast.makeText(context, "Application submitted successfully", Toast.LENGTH_SHORT).show()
+                        onComplete() // Trigger completion callback (e.g., navigation)
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(context, "Error submitting application: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun getUserApplications(userId: String, onComplete: (List<ApplicationData>) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("applications")
+            .whereEqualTo("userId", userId)
+            .get()
+            .addOnSuccessListener { result ->
+                val applications = result.documents.mapNotNull { it.toObject(ApplicationData::class.java) }
+                onComplete(applications)
+            }
+            .addOnFailureListener {
+                onComplete(emptyList()) // Return an empty list on failure
+            }
+    }
+
+    fun getAllApplications(onComplete: (List<ApplicationData>) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("applications")
+            .get()
+            .addOnSuccessListener { result ->
+                val applications = result.documents.mapNotNull { it.toObject(ApplicationData::class.java) }
+                onComplete(applications)
+            }
+            .addOnFailureListener {
+                onComplete(emptyList()) // Return an empty list on failure
+            }
+    }
+
+    fun updateApplicationStatus(applicationId: String, status: String) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("applications").document(applicationId)
+            .update("status", status)
+            .addOnSuccessListener {
+                // Notify the admin about success (optional: show a Toast or Snackbar)
+            }
+            .addOnFailureListener {
+                // Handle failure (optional: show a Toast or Snackbar)
+            }
+    }
+
+    fun updateJob(jobData: JobData, onComplete: () -> Unit, onFailure: (Exception) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("jobs").document(jobData.jobID)
+            .set(jobData)
+            .addOnSuccessListener { onComplete() }
+            .addOnFailureListener { exception -> onFailure(exception) }
+    }
+
+
 }
